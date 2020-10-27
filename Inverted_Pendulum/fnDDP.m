@@ -1,45 +1,13 @@
-function  [u_traj] = fnDDP(current_state)
-
-Horizon = 300; % 1.5sec
-
-% Number of Iterations
-num_iter = 100;
-
-% Discretization
-dt = 0.01;	
-
-% Weight in Final State: (part of terminal cost)
-Q_f = zeros(2,2);
-Q_f(1,1) = 100; 	%Penalize more w.r.t errors in theta
-Q_f(2,2) = 10;      %Penalize more w.r.t errors in theta_dot
-
-%  Weight in the state (for running cost)
-P = zeros(2,2); 
-P(1,1) = 0;
-P(2,2) = 0;
-
-% Weight in the Control: 
-R = .1* eye(1,1); 
+function  [u_traj, cost] = fnDDP(x,u,Horizon,num_iter,dt,p_target,gamma,Q_f,R)
 
 % Initial Configuration: (Initial state)
-xo = zeros(2,1);
-xo(1,1) = current_state(1,1);
-xo(2,1) = current_state(2,1);
+xo = x;
 
 % Initial Control:
 % Horizon -1 b/c at last time step we have no control
-u_k = zeros(1,Horizon-1);   
-du_k = zeros(1,Horizon-1);
-
+u_k = u;   
 % Initial trajectory:
 x_traj = zeros(2,Horizon);
-
-% Target: (Terminal States)
-p_target(1,1) = pi;     % theta
-p_target(2,1) = 0;      % theta_dot
-
-% Learning Rate .5
-gamma = 0.5;
 
 %Initialize Q Value Function
 Q = zeros(1,Horizon);
@@ -117,10 +85,10 @@ for k = 1:num_iter % Run for a certain number of iterations
     %---------------------------------------------> Simulation of the Nonlinear System
     %Create new nominal trajectory based on new control (u_new)
     [x_traj] = fnsimulate(xo,u_new,Horizon,dt,0);   
-    [Cost(:,k)] =  fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R);
-
-    %fprintf('iLQG Iteration %d,  Current Cost = %e \n',k,Cost(1,k));
  
 end
 
-u_traj = u_k;
+u_traj = u_k; % Return Control Trajectory
+cost = fnCostComputation(x_traj,u_k,p_target,dt,Q_f,R); %Return Current Cost
+
+end
