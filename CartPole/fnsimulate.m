@@ -1,10 +1,4 @@
-function [x] = fnsimulate(xo,u_new,Horizon,dt,sigma, dynamicsf)
-
-global g; 
-global m_c;
-global m_p; 
-global l;
-
+function [x] = fnsimulate(dynamicsf,xo,u_new,Horizon,dt,sigma)
 
 x = xo;
 

@@ -38,9 +38,6 @@ F = [  x2,
 
 dynamicsf = matlabFunction(F);
 
-%Compute the Jacobians of the dynamics
-dFx = matlabFunction(jacobian(F, [x1; x2; x3; x4]));
-dFu = matlabFunction(jacobian(F, [u]));
 
 % Horizon 
 Horizon = 60; 
@@ -83,10 +80,11 @@ x_traj = zeros(4,Horizon);
 u_traj = zeros(2,Horizon-1);
 Cost = zeros(1,Horizon);
 i = 0;
+
 while 1
-    [u_new, cost] = fnDDP(x_init,u_init,num_iter,Horizon,gamma,p_target,dt,Q_f,R);
+    [u_new, cost] = fnDDP(dynamicsf,x_init,u_init,num_iter,Horizon,gamma,p_target,dt,Q_f,R);
     u_init = u_new;
-    [x] = fnsimulate(x_init,u_new,Horizon,dt,0, dynamicsf);
+    [x] = fnsimulate(dynamicsf,x_init,u_new,Horizon,dt,0);
     x_init = x(:,2);
     
     if(norm(x_init - p_target) < 1e-3) %Stop when task is complete

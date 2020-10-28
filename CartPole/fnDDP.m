@@ -1,4 +1,4 @@
-function  [u_traj, cost] = fnDDP(x,u_new,num_iter,Horizon,gamma,p_target,dt,Q_f,R)
+function  [u_traj, cost] = fnDDP(dynamicsf, x,u_new,num_iter,Horizon,gamma,p_target,dt,Q_f,R)
 
 % Variables for the cart-pole problem
 global g; 
@@ -14,17 +14,9 @@ l = 0.25;  		% length of the pole
 % Initialize the state space equations for the dynamics 
 syms x1 x2 x3 x4 u
 
-F = [  x2,
-        (m_p*sin(x3)*(l*(x4.^2) + g*cos(x3)) + u)./(m_c + m_p*(sin(x3).^2)), 
-        x4, 
-        (-m_p*l*(x4.^2)*cos(x3)*sin(x3) - (m_c + m_p)*g*sin(x3) - cos(x3)*u)./(l*(m_c + m_p*(sin(x3).^2)))
-]; 
-
-dynamicsf = matlabFunction(F);
-
 %Compute the Jacobians of the dynamics
-dFx = matlabFunction(jacobian(F, [x1; x2; x3; x4]));
-dFu = matlabFunction(jacobian(F, u));
+dFx = matlabFunction(jacobian(dynamicsf, [x1; x2; x3; x4]));
+dFu = matlabFunction(jacobian(dynamicsf, u));
 
 
 % Initial State
@@ -103,7 +95,7 @@ x_traj = zeros(4,Horizon);
 
         %---------------------------------------------> Simulation of the Nonlinear System
         %Create new nominal trajectory based on new control (u_new)
-        [x_traj] = fnsimulate(xo,u_new,Horizon,dt,0,dynamicsf);	 
+        [x_traj] = fnsimulate(dynamicsf,xo,u_new,Horizon,dt,0);	 
 
     end
 
