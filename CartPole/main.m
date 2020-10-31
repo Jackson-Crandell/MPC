@@ -160,7 +160,7 @@ plot(time,x_traj(4,:),'linewidth',4);
 plot(time,p_target(4,1)*ones(1,Horizon),'red','linewidth',4)
 title('$\dot{\theta}$','Interpreter','latex','fontsize',24);
 xlabel('Time in sec','fontsize',20)
-ylabel('Rad/s','fontsize',20);
+ylabel('Rad/s','fontsizecch',20);
 hold off;
 grid;
 

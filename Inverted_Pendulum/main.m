@@ -22,6 +22,13 @@ l = 1;          % length of pendulum
 b = 0.1;        % damping coefficient
 I = m*(l.^2);   % inertia 
 
+syms x1 x2 u
+
+F = [x2, 
+    ((-b/I)*x2)-((m*g*l)/I)*sin(x1)+(u/I)
+]; 
+dynamicsf = matlabFunction(F);
+
 % Other Parameters
 Horizon = 50;
 num_iter = 20;
@@ -55,9 +62,9 @@ Cost = zeros(1,Horizon);
 
 i = 0;
 while 1
-    [u, cost] = fnDDP(x_init,u_init,Horizon,num_iter,dt,p_target,gamma,Q_f,R);
+    [u, cost] = fnDDP(dynamicsf,x_init,u_init,Horizon,num_iter,dt,p_target,gamma,Q_f,R);
     u_init = u; % Update controls
-    [x] = fnsimulate(x_init,u,Horizon,dt,0); %Apply (only) first control input
+    [x] = fnsimulate(dynamicsf, x_init,u,Horizon,dt,0); %Apply (only) first control input
     x_init = x(:,2);
     
     if (norm(x_init - p_target) < 1e-3) % Stop when target is reached
