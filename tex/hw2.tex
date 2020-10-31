@@ -1,0 +1,161 @@
+\documentclass[11pt]{homework}
+\usepackage[margin=1in]{geometry}
+\usepackage{float}
+\fancyheadoffset{0cm}
+
+\newcommand{\hwname}{Luis Pimentel ~~~~~~~~~~~~~~ Jackson Crandell}
+\newcommand{\professor}{Professor Evangelos Theodorou}
+\newcommand{\hwemail}{lpimentel3@gatech.edu ~~~ jackcrandell@gatech.edu}
+\newcommand{\hwtype}{Homework}
+\newcommand{\hwnum}{2}
+\newcommand{\hwclass}{AE 4803 Robotics and Autonomy}
+\newcommand{\hwdate}{November 2, 2020}
+
+\renewcommand{\vec}[1]{\ensuremath{\boldsymbol{#1}}}
+\addtolength{\jot}{0.5em}
+\allowdisplaybreaks
+
+\usepackage[colorlinks=false]{hyperref}
+\usepackage[ruled,vlined]{algorithm2e}
+
+\usepackage{minted}
+\usepackage{ dsfont }
+
+\begin{document}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Part 1 
+\renewcommand{\questiontype}{Part}
+\question
+	See MATLAB code implementation. 
+
+	To run this simulation run the Inverted\_Pendulum/main.m file.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Part 1 
+\renewcommand{\questiontype}{Part}
+\question
+	See MATLAB code implementation. 
+
+	To run this simulation run the CartPole/main.m file.
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Part 3 
+\setcounter{questionCounter}{2}
+\renewcommand{\questiontype}{Part}
+\question
+\begin{arabicparts}
+%\setcounter{questionCounter}{2}
+
+
+
+
+\questionpart
+See MATLAB code implementation.
+
+To run this simulation run the Inverted\_Pendulum/main\_robustness.m file. \\
+
+	In this problem we are asked to test the robustness of our MPC-DDP policy on a nomial model of the system used in the DDP feedback optimization and a real model used to propagate forward the dynamics. 
+	
+	To test robustness we create the real model by perturbing the nominal model by different levels of uncertainty denoted by $\sigma$. The parameters of the inverted pendulum are perturbed as follows. 
+	
+	\begin{align*}
+		& g_{real} = abs(g_{nominal} + (0.5)^{\sigma}g_{nominal}(2rand - 1)\sigma^2) \\
+		& m_{real} = abs(m_{nominal} + m_{nominal}(2rand - 1)\sigma) \\
+		& b_{real} = abs(b_{nominal} + b_{nominal}(2rand - 1)\sigma) \\
+		& l_{real} = abs(l_{nominal} + l_{nominal}(2rand - 1)\sigma) \\
+		& I_{real} = abs(I_{nominal} + I_{nominal}(2rand - 1)\sigma) \\
+	\end{align*}
+	
+	In this update rand is a random number between 0 and 1. As the inverted pendulum can tolerate high levels of $\sigma$ the parameter gravity is scaled down much more as to model Earth's gravity closer. The absolute value is taken as these parameters cannot be negative. 
+	
+	In our test we increase $\sigma$, compute a new real model with this uncertainty level, and rerun MPC-DDP until it cannot converge anymore. 
+	
+	This process is detailed through the following algorithm:\\
+	
+	\begin{algorithm}[H]
+		\SetAlgoLined
+ 		Initialize: $\vec{F_{nominal}}, \vec{F_{real}}$: nominal and real dynamics model\;
+ 		Initialize: $\sigma$: = 0 uncertainty level, $\delta_{\sigma}$\;
+ 		
+ 		\While{}{
+ 			$\vec{F_{real}} $ = update\_real\_model($\sigma, \vec{F_{nominal}}$) \;
+  			\While{}{
+  				$\vec{u} = $ fnDDP(\vec{F_{nominal}},\vec{x_{now}})\;
+  				$\vec{x}_{next} = $ fnDynamics($\vec{F_{real}}, \vec{x_{now}}, \vec{u}$)\;
+  				Repeat until task completion. Break if not converged and greater than $i_{max}$ iterations
+  			}
+  			$\sigma$ = $\sigma$ + $\delta_{\sigma}$ \;
+  			Break if last MPC-DDP not converged and greater than $i_{max}$ iterations
+ 		}
+ 		\caption{MPC-DDP Robustness Test Against Perturbations in Nominal Model}
+	\end{algorithm}
+
+	The following plot shows the results of MPC-DDP after this robustness test is run for several levels of uncertainty:
+	
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.20]{robustness_results_pendulum.png}
+			\caption{Robustness Test results for Inverted Pendulum.}
+		\end{figure}
+		
+		The following plot shows the results of the perturbation in parameters of the model used to create the real model, for several levels of uncertainty:
+	
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.20]{robustness_results_params_pendulum.png}
+			\caption{Robustness Test results for Inverted Pendulum.}
+		\end{figure}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.25]{robustness_results_params_pendulum2.png}
+			\caption{Robustness Test results for Inverted Pendulum.}
+		\end{figure}
+
+		\newpage
+		
+\questionpart
+See MATLAB code implementation.
+
+To run this simulation run the CartPole/main\_robustness.m file. \\
+
+		The robustness test described above was executed for the Cart Pole problem. For this we use the following real model update rule. 
+		
+		\begin{align*}
+			& g_{real} = abs(g_{nominal} + (0.5)g_{nominal}(2rand - 1)\sigma^2) \\
+			& m\_c_{real} = abs(m\_p_{nominal} + m\_c_{nominal}(2rand - 1)\sigma) \\
+			& m\_p_{real} = abs(m\_c_{nominal} + m\_p_{nominal}(2rand - 1)\sigma) \\
+			& l_{real} = abs(l_{nominal} + l_{nominal}(2rand - 1)\sigma) \\
+		\end{align*}
+		
+		
+		The following are the results. 
+	
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.165]{robustness_results_cart_pole.png}
+			\caption{Robustness Test results for Cart Pole.}
+		\end{figure}
+		
+		The following plot shows the results of the perturbation in parameters of the model used to create the real model, for several levels of uncertainty:
+	
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.17]{robustness_results_params_cart_pole.png}
+			\caption{Robustness Test results for Cart Pole.}
+		\end{figure}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[scale=0.17]{robustness_results_params_cart_pole2.png}
+			\caption{Robustness Test results for Cart Pole.}
+		\end{figure}
+
+\end{arabicparts}
+
+	
+
+
+
+
+
+
+
+\end{document}
